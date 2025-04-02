@@ -6,13 +6,13 @@ Final Assignment
 
 #### Overview
 
-This is a template repository for the final assignment of course "Projects in Data Science." You should refer to this repository in your final hand-in.
+This is a repository for the final assignment of course "Projects in Data Science." You should refer to this repository in your final hand-in.
 
 If using github.itu.dk, you need to download the repository and make your own. 
 
 If you are using general Github, you can clone or fork the repository directly. If your usernames do not give sufficient hints as to who you are, you can tell the TAs how to match them. 
 
-Your repository MUST be named 2025-FYP-groupXX where XX is your group number. 
+Your repository MUST be named 2025-FYP-groupXX where XX is The Goldfish(Only Valid option). 
 
 Look at the slides of the previous two weeks for details of the hand-in. 
 
