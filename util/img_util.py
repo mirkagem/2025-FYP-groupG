@@ -1,5 +1,5 @@
 import random
-
+import os
 import cv2
 
 
@@ -40,6 +40,7 @@ class ImageDataLoader:
 
         # get a sorted list of all files in the directory
         # fill in with your own code below
+        self.file_list= sorted([os.path.join(directory, f) for f in os.listdir(directory) if f.lower().endswith(('.png', '.jpg', 'jpeg', '.bmp', '.tiff')) and any(str(i) in f for i in range(1179, 1379))])
 
         if not self.file_list:
             raise ValueError("No image files found in the directory.")
@@ -57,3 +58,9 @@ class ImageDataLoader:
     def __iter__(self):
         # fill in with your own code below
         pass
+
+def path_finder():
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    relative_path_to_data = os.path.join(current_directory, '../data')
+    data_folder_path = os.path.normpath(relative_path_to_data)
+    return data_folder_path
