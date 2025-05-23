@@ -62,6 +62,7 @@ class ImageDataLoader:
 
     def __iter__(self):
         # Delete hair if annotation for hair is NOT 0 
+        masked_images = []
         for file_path in self.img_list:
             noMask = False
             img_rgb, img_gray = readImageFile(file_path)
@@ -72,20 +73,28 @@ class ImageDataLoader:
             for j in self.masks:
                 if img_name == (j[:-9]+'.png'):
                     mask_name = j
-                    break
-                else:
+                    noMask = False
+                    break       
+                else:  
                     noMask = True
             
             if noMask:
                 #You load the img and create a mask for it
-                pass
+                print('skipped')
+                continue
             else:
                 mask=cv2.imread(f'{self.mask_path}/{mask_name}', cv2.IMREAD_GRAYSCALE)
-            print(f'{img_name} {img_rgb.shape} {mask_name} {mask.shape}')
+            print(img_name,img_rgb.shape,mask_name,mask.shape,noMask)
             mask = mask.astype(int)
             image_masked = img_rgb.copy()
             image_masked[mask == 0] = 0
+
+            masked_image = [image_masked, mask]
+            masked_images.append(masked_image)
+
             dir_path = self.directory + r'\New'
             os.makedirs(dir_path, exist_ok=True)
             saveImageFile(image_masked, os.path.join(dir_path, os.path.basename(file_path)))
+        
+        return masked_images
 
