@@ -24,33 +24,36 @@ df = pd.DataFrame()
 
 imgIDx = 0
 
+csv_dir = os.path.dirname(os.path.abspath(__file__)) + '/' + 'metadata.csv'
+
+df_ground=pd.read_csv(csv_dir)
+
+df_ground['cancer']=np.where( (df_ground[ 'diagnostic']=='BCC') ^ (df_ground['diagnostic']=='MEL') ^ (df_ground['diagnostic']=='SCC'),1,0)
+
 for imgAndMask in testBatch:
     img = imgAndMask[0]
     mask = imgAndMask[1]
+    patNumber = imgAndMask[2]
+
+    cancer_part=df_ground['cancer'][( df_ground['img_id']==patNumber )].to_numpy()
 
     feature_A(mask,imgIDx,df)
     feature_B(img, mask, imgIDx, df)
     feature_C(img, imgIDx, df)
+    df.loc[imgIDx,'Cancer']=cancer_part[0]
 
     imgIDx += 1
-
-csv_dir = os.path.dirname(os.path.abspath(__file__)) + '/' + 'metadata.csv'
-
-df_ground=pd.read_csv(csv_dir)
-df_ground['cancer']=np.where( (df_ground[ 'diagnostic']=='BCC') ^ (df_ground['diagnostic']=='MEL') ^ (df_ground['diagnostic']=='SCC'),1,0)
-
-df['Cancer']=df_ground['cancer']
 
 ## Training and testing data NOTE: stratify with equal amount of men and women
 from sklearn.model_selection import StratifiedKFold
 skf=StratifiedKFold(5,shuffle=True)
 
 ## Split into features and cancer values
-X=df.drop(columns='Cancer')
+x=df.drop(columns='Cancer')
 y=df['Cancer']
 
-## Split based on cancer values
-for train_idx, test_idx in skf.split(X, y):
+## Split based on cancer values FIXME Testing set seed
+for train_idx, test_idx in skf.split(x, y):
     train_df = df.iloc[train_idx]  # 80%
     test_df = df.iloc[test_idx]    # 20%
     break
@@ -61,11 +64,11 @@ from sklearn.model_selection import StratifiedShuffleSplit
 sss = StratifiedShuffleSplit(n_splits=1, test_size=0.4)
 
 ## Split into features and cancer values
-X = train_df.drop(columns='Cancer')
+x = train_df.drop(columns='Cancer')
 y = train_df['Cancer']
 
 ## Split based on cancer values
-for train_idx, test_idx in sss.split(X, y):
+for train_idx, test_idx in sss.split(x, y):
     train_df = df.iloc[train_idx]  # 60%
     valid_df = df.iloc[test_idx]    # 40%
 ## Takes previous training data

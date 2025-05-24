@@ -1,6 +1,8 @@
 import random
 import os
 import cv2
+import numpy as np
+from mask_function import get_mask
 
 
 def readImageFile(file_path):
@@ -43,7 +45,6 @@ class ImageDataLoader:
         # get a sorted list of all files in the directory
         # fill in with your own code below
         self.img_list= sorted([os.path.join(self.img_path, f) for f in os.listdir(self.img_path) if f.lower().endswith(('.png', '.jpg', 'jpeg', '.bmp', '.tiff'))])
-        print(self.img_list)
         self.images=os.listdir(self.img_path)
         self.masks=os.listdir(self.mask_path)
         self.mask_list= sorted([os.path.join(self.mask_path, f) for f in os.listdir(self.mask_path) if f.lower().endswith(('.png', '.jpg', 'jpeg', '.bmp', '.tiff'))])
@@ -79,17 +80,17 @@ class ImageDataLoader:
                     noMask = True
             
             if noMask:
-                #You load the img and create a mask for it
-                print('skipped')
-                continue
+                mask = get_mask(img_rgb)
             else:
                 mask=cv2.imread(f'{self.mask_path}/{mask_name}', cv2.IMREAD_GRAYSCALE)
-            print(img_name,img_rgb.shape,mask_name,mask.shape,noMask)
+                if np.sum(np.nonzero(mask))==0: ## If mask black image
+                    mask=get_mask(img_rgb) ## Make own mask
+
             mask = mask.astype(int)
             image_masked = img_rgb.copy()
             image_masked[mask == 0] = 0
 
-            masked_image = [image_masked, mask]
+            masked_image = [image_masked, mask, img_name]
             masked_images.append(masked_image)
 
             dir_path = self.directory + r'\New'
