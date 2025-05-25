@@ -47,7 +47,7 @@ for _ in range(10):
     x = train_df2.drop(columns='Cancer')
     y = train_df2['Cancer']
 
-    ## Split based on cancer values
+    ## Split based on cancer values FIXME: Look into whether train_df2 should be used instead of train_df - they should have the same result anyways
     for train_idx, test_idx in sss.split(x, y):
         final_train_df = train_df.iloc[train_idx]  # 80%
         valid_df = train_df.iloc[test_idx]    # 20%
