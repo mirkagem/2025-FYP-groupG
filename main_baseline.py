@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+from sklearn.metrics import accuracy_score,recall_score,roc_auc_score,f1_score, cohen_kappa_score
 sys.path.append(os.path.abspath("util"))
 
 #Importing the loader class, features and classifier.
@@ -69,41 +70,137 @@ for train_idx, test_idx in sss.split(x, y):
     test_df = df.iloc[test_idx]    # 20%
 ## Gives training data (80%) and testing data (20%)
 
-## Training and validation
-sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2)
-
-## Split into features and cancer values
-x = train_df.drop(columns='Cancer')
-y = train_df['Cancer']
-
-## Split based on cancer values
-for train_idx, test_idx in sss.split(x, y):
-    final_train_df = train_df.iloc[train_idx]  # 80%
-    valid_df = train_df.iloc[test_idx]    # 20%
-## Takes previous training data
-## Gives training data (80%) and validation data (20%)
-
-## Remove 'Cancer' for normalizing features
-train_df_cancer=final_train_df.copy()
-train_df=final_train_df.drop(columns='Cancer')
-
-valid_df_cancer=valid_df.copy()
-valid_df=valid_df.drop(columns='Cancer')
 ## Normalize the features
 from sklearn import preprocessing
-scaler = preprocessing.StandardScaler().fit(train_df)
+scaler = preprocessing.StandardScaler().fit(test_df)
 
-#Apply to data to both train and test test
-train_scaled = scaler.transform(train_df)
-valid_scaled = scaler.transform(valid_df)
-
-columns = valid_df.columns
-train_df_scaled = pd.DataFrame(train_scaled,columns=columns,dtype=np.float64)
-valid_df_scaled= pd.DataFrame(valid_scaled,columns=columns,dtype=np.float64)
-
+columns = test_df.columns
 test_df_cancer=test_df.copy()
 test_df=test_df.drop(columns='Cancer')
 test_scaled=scaler.transform(test_df)
 test_df_scaled=pd.DataFrame(test_scaled,columns=columns,dtype=np.float64)
 
-classifier(train_df_scaled, train_df_cancer, valid_df_cancer, valid_df_scaled,test_df_scaled,test_df_cancer)
+rfc_accuracies=[]
+rfc_recalls=[]
+rfc_f1=[]
+
+## Cross validation FIXME: Save best model and use it for testing instead of latest
+for _ in range(10):
+    ## Training and validation
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2)
+
+    ## Split into features and cancer values
+    x = train_df.drop(columns='Cancer')
+    y = train_df['Cancer']
+
+    ## Split based on cancer values
+    for train_idx, test_idx in sss.split(x, y):
+        final_train_df = train_df.iloc[train_idx]  # 80%
+        valid_df = train_df.iloc[test_idx]    # 20%
+    ## Takes previous training data
+    ## Gives training data (80%) and validation data (20%)
+
+    ## Remove 'Cancer' for normalizing features
+    train_df_cancer=final_train_df.copy()
+    train_df=final_train_df.drop(columns='Cancer')
+
+    valid_df_cancer=valid_df.copy()
+    valid_df=valid_df.drop(columns='Cancer')
+    
+    ## Scaling
+    scaler = preprocessing.StandardScaler().fit(train_df)
+    train_scaled = scaler.transform(train_df)
+    valid_scaled = scaler.transform(valid_df)
+    train_df_scaled = pd.DataFrame(train_scaled,columns=columns,dtype=np.float64)
+    valid_df_scaled= pd.DataFrame(valid_scaled,columns=columns,dtype=np.float64)
+
+    knntrained,rfctrained,gpctrained=classifier(train_df_scaled, train_df_cancer)
+    predicted_rfc=rfctrained.predict(valid_df_scaled)
+    rfc_accuracies.append(accuracy_score(valid_df_cancer['Cancer'],predicted_rfc))
+    rfc_recalls.append(recall_score(valid_df_cancer['Cancer']),predicted_rfc)
+    rfc_f1.append(f1_score(valid_df_cancer['Cancer']),predicted_rfc)
+
+print(f'Average of RFC accuracies over 10 runs: {np.mean(rfc_accuracies)}')
+print(f'Average of RFC recalls over 10 runs: {np.mean(rfc_recalls)}')
+print(f'Average of RFC F1 scores over 10 runs: {np.mean(rfc_f1)}')
+
+
+## Different ways of evaluating the models
+# predicted_knn=knntrained.predict(valid_df_scaled)
+# predicted_rfc=rfctrained.predict(valid_df_scaled)
+# predicted_gpc=gpctrained.predict(valid_df_scaled)
+# acc_knn = accuracy_score(valid_df_cancer['Cancer'], predicted_knn)
+# acc_rfc = accuracy_score(valid_df_cancer['Cancer'], predicted_rfc)
+# acc_gpc = accuracy_score(valid_df_cancer['Cancer'], predicted_gpc)
+# print('knn -',acc_knn)
+# print('rfc -',acc_rfc)
+# print('gpc -',acc_gpc)
+
+# recall_knn = recall_score(valid_df_cancer['Cancer'],predicted_knn)
+# recall_rfc = recall_score(valid_df_cancer['Cancer'],predicted_rfc)
+# recall_gpc = recall_score(valid_df_cancer['Cancer'],predicted_gpc)
+# print('knn recall -',recall_knn)
+# print('rfc recall -',recall_rfc)
+# print('gpc recall -',recall_gpc)
+
+# roc_knn=roc_auc_score(valid_df_cancer['Cancer'],predicted_knn)
+# roc_rfc=roc_auc_score(valid_df_cancer['Cancer'],predicted_rfc)
+# roc_gpc=roc_auc_score(valid_df_cancer['Cancer'],predicted_gpc)
+# print('knn roc -',roc_knn)
+# print('rfc roc -',roc_rfc)
+# print('gpc roc -',roc_gpc)
+
+# f1_knn=f1_score(valid_df_cancer['Cancer'],predicted_knn)
+# f1_rfc=f1_score(valid_df_cancer['Cancer'],predicted_rfc)
+# f1_gpc=f1_score(valid_df_cancer['Cancer'],predicted_gpc)
+# print('knn f1 -',f1_knn)
+# print('rfc f1 -',f1_rfc)
+# print('gpc f1 -',f1_gpc)
+
+# cohen_kappa_knn = cohen_kappa_score(valid_df_cancer['Cancer'], predicted_knn)
+# cohen_kappa_rfc= cohen_kappa_score(valid_df_cancer['Cancer'], predicted_rfc)
+# cohen_kappa_gpc= cohen_kappa_score(valid_df_cancer['Cancer'], predicted_gpc)
+# print('knn cohen kappa -', cohen_kappa_knn)
+# print('rfc cohen kappa -', cohen_kappa_rfc)
+# print('gpc cohen kappa -', cohen_kappa_gpc)
+
+print()
+## Testing
+predicted_knn_test=knntrained.predict(test_df_scaled)
+predicted_rfc_test=rfctrained.predict(test_df_scaled)
+predicted_gpc_test=gpctrained.predict(test_df_scaled)
+
+acc_knn = accuracy_score(test_df_cancer['Cancer'], predicted_knn_test)
+acc_rfc = accuracy_score(test_df_cancer['Cancer'], predicted_rfc_test)
+acc_gpc = accuracy_score(test_df_cancer['Cancer'], predicted_gpc_test)
+print('knn -',acc_knn)
+print('rfc -',acc_rfc)
+print('gpc -',acc_gpc)
+
+recall_knn = recall_score(test_df_cancer['Cancer'],predicted_knn_test)
+recall_rfc = recall_score(test_df_cancer['Cancer'],predicted_rfc_test)
+recall_gpc = recall_score(test_df_cancer['Cancer'],predicted_gpc_test)
+print('knn recall -',recall_knn)
+print('rfc recall -',recall_rfc)
+print('gpc recall -',recall_gpc)
+
+roc_knn=roc_auc_score(test_df_cancer['Cancer'],predicted_knn_test)
+roc_rfc=roc_auc_score(test_df_cancer['Cancer'],predicted_rfc_test)
+roc_gpc=roc_auc_score(test_df_cancer['Cancer'],predicted_gpc_test)
+print('knn roc -',roc_knn)
+print('rfc roc -',roc_rfc)
+print('gpc roc -',roc_gpc)
+
+f1_knn=f1_score(test_df_cancer['Cancer'],predicted_knn_test)
+f1_rfc=f1_score(test_df_cancer['Cancer'],predicted_rfc_test)
+f1_gpc=f1_score(test_df_cancer['Cancer'],predicted_gpc_test)
+print('knn f1 -',f1_knn)
+print('rfc f1 -',f1_rfc)
+print('gpc f1 -',f1_gpc)
+
+cohen_kappa_knn = cohen_kappa_score(test_df_cancer['Cancer'], predicted_knn_test)
+cohen_kappa_rfc= cohen_kappa_score(test_df_cancer['Cancer'], predicted_rfc_test)
+cohen_kappa_gpc= cohen_kappa_score(test_df_cancer['Cancer'], predicted_gpc_test)
+print('knn cohen kappa -', cohen_kappa_knn)
+print('rfc cohen kappa -', cohen_kappa_rfc)
+print('gpc cohen kappa -', cohen_kappa_gpc)
