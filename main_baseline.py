@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score,recall_score,roc_auc_score,f1_score, cohen_kappa_score
+from sklearn import preprocessing
 sys.path.append(os.path.abspath("util"))
 
 #Importing the loader class, features and classifier.
@@ -70,14 +71,16 @@ for train_idx, test_idx in sss.split(x, y):
     test_df = df.iloc[test_idx]    # 20%
 ## Gives training data (80%) and testing data (20%)
 
-## Normalize the features
-from sklearn import preprocessing
-scaler = preprocessing.StandardScaler().fit(test_df)
-
+## Normalize the test features
+#Separate cancer values
 columns = test_df.columns
 test_df_cancer=test_df.copy()
 test_df=test_df.drop(columns='Cancer')
+#Scaler get
+scaler = preprocessing.StandardScaler().fit(test_df)
+#Scaler apply
 test_scaled=scaler.transform(test_df)
+#Transform back to DF
 test_df_scaled=pd.DataFrame(test_scaled,columns=columns,dtype=np.float64)
 
 rfc_accuracies=[]
