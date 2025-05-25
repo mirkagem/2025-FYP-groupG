@@ -1,5 +1,4 @@
 def classifier(train_df_scaled, train_df_cancer, valid_df_cancer, valid_df_scaled):
-    ## Primitive way of finding accuracy
     ## Train a classifier
     from sklearn.neighbors import KNeighborsClassifier
     knn = KNeighborsClassifier()
@@ -13,7 +12,7 @@ def classifier(train_df_scaled, train_df_cancer, valid_df_cancer, valid_df_scale
     gpc=GaussianProcessClassifier()
     gpctrained=gpc.fit(train_df_scaled,train_df_cancer['Cancer'])
 
-    ## TEMP until we find a better way of finding accuracy
+    ## Different ways of evaluating the models
     import matplotlib.pyplot as plt
     import seaborn as sns
     from sklearn.metrics import accuracy_score,confusion_matrix,recall_score,roc_auc_score,f1_score, cohen_kappa_score
