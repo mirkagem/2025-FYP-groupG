@@ -47,9 +47,9 @@ for imgAndMask in imageBatch:
 
     cancer_part=df_ground['cancer'][( df_ground['img_id']==patNumber )].to_numpy()
 
-    feature_A(mask,imgIDx,df)
-    feature_B(img, mask, imgIDx, df)
-    feature_C(img, imgIDx, df)
+    feature_A(img,mask,imgIDx,df)
+    feature_B(img,mask,imgIDx,df)
+    feature_C(img,mask,imgIDx,df)
 
     df.loc[imgIDx,'Cancer']=cancer_part[0]
 
@@ -99,8 +99,14 @@ scaler = preprocessing.StandardScaler().fit(train_df)
 train_scaled = scaler.transform(train_df)
 valid_scaled = scaler.transform(valid_df)
 
-train_df_scaled = pd.DataFrame(train_scaled,columns=['A - asymmetry','B - convexity', 'C - blueveil'],dtype=np.float64)
-valid_df_scaled= pd.DataFrame(valid_scaled,columns=['A - asymmetry','B - convexity', 'C - blueveil'],dtype=np.float64)
+columns = valid_df.columns
+train_df_scaled = pd.DataFrame(train_scaled,columns=columns,dtype=np.float64)
+valid_df_scaled= pd.DataFrame(valid_scaled,columns=columns,dtype=np.float64)
 
-classifier(train_df_scaled, train_df_cancer, valid_df_cancer, valid_df_scaled)
+test_df_cancer=test_df.copy()
+test_df=test_df.drop(columns='Cancer')
+test_scaled=scaler.transform(test_df)
+test_df_scaled=pd.DataFrame(test_scaled,columns=columns,dtype=np.float64)
+
+classifier(train_df_scaled, train_df_cancer, valid_df_cancer, valid_df_scaled,test_df_scaled,test_df_cancer)
 

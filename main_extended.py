@@ -34,7 +34,7 @@ imgIDx = 0
 #Code for finding the path of the CSVs
 #It's done this way so we avoid hard coded paths and so it runs without any user modifications
 metadata_dir = os.path.dirname(os.path.abspath(__file__)) + '/' + 'metadata.csv'
-annotation_dir = os.path.dirname(os.path.abspath(__file__)) + '/' + 'manual_annotations.csv'
+annotation_dir = os.path.dirname(os.path.abspath(__file__)) +'/result' + '/' + 'manual_annotations.csv'
 
 #Loading the CSVs
 df_ground=pd.read_csv(metadata_dir)
@@ -52,9 +52,9 @@ for imgAndMask in imageBatch:
     hairy=df_annotations['Average'][(df_annotations['img_id']==patNumber)].to_numpy()
     cancer_part=df_ground['cancer'][( df_ground['img_id']==patNumber )].to_numpy()
 
-    feature_A(mask,imgIDx,df)
-    feature_B(img, mask, imgIDx, df)
-    feature_C(img, imgIDx, df)
+    feature_A(img,mask,imgIDx,df)
+    feature_B(img,mask,imgIDx,df)
+    feature_C(img,mask,imgIDx,df)
     feature_H(img, imgIDx, df)
 
     df.loc[imgIDx,'Cancer']=cancer_part[0]
@@ -121,8 +121,10 @@ scaler = preprocessing.StandardScaler().fit(train_df)
 train_scaled = scaler.transform(train_df)
 valid_scaled = scaler.transform(valid_df)
 
-train_df_scaled = pd.DataFrame(train_scaled,columns=['A - asymmetry','B - convexity', 'C - blueveil'],dtype=np.float64)
-valid_df_scaled= pd.DataFrame(valid_scaled,columns=['A - asymmetry','B - convexity', 'C - blueveil'],dtype=np.float64)
+
+columns = valid_df.columns
+train_df_scaled = pd.DataFrame(train_scaled,columns=columns,dtype=np.float64)
+valid_df_scaled= pd.DataFrame(valid_scaled,columns=columns,dtype=np.float64)
 
 classifier(train_df_scaled, train_df_cancer, valid_df_cancer, valid_df_scaled)
 
