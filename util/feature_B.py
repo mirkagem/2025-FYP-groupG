@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from scipy.spatial import ConvexHull
 import cv2
+from skimage import morphology
 def convexity_score(mask):
 
     coords = np.transpose(np.nonzero(mask))
@@ -31,10 +32,23 @@ def measure_streaks(image):
 
     return irregularity 
 
+def get_compactness(mask):
+    # mask = color.rgb2gray(mask)
+    area = np.sum(mask)
+
+    struct_el = morphology.disk(3)
+    mask_eroded = morphology.binary_erosion(mask, struct_el)
+    perimeter = np.sum(mask - mask_eroded)
+
+    return perimeter**2 / (4 * np.pi * area)
+
 def feature_B(image,mask,im_id,df:pd.DataFrame):
     '''Takes mask of image, image and dataframe to write results in\\
     Find the convexity score and measures streaks for the mask and image respectively\\
     Outputs a modified dataframe with 2 new columns 'B - convexity','B - streaks'
     '''
-    df.loc[im_id,'B - convexity']=convexity_score(mask)
+    ## Choose one of these, comment out others
+    # df.loc[im_id,'B - convexity']=convexity_score(mask)
+    # df.loc[im_id,'B - streaks']=measure_streaks(image)
+    df.loc[im_id,'B - compactness']=get_compactness(mask)
     return df
