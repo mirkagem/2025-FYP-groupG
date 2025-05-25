@@ -16,7 +16,7 @@ def classifier(train_df_scaled, train_df_cancer, valid_df_cancer, valid_df_scale
     ## TEMP until we find a better way of finding accuracy
     import matplotlib.pyplot as plt
     import seaborn as sns
-    from sklearn.metrics import accuracy_score,confusion_matrix,recall_score,roc_auc_score,f1_score
+    from sklearn.metrics import accuracy_score,confusion_matrix,recall_score,roc_auc_score,f1_score, cohen_kappa_score
     predicted_knn=knntrained.predict(valid_df_scaled)
     predicted_rfc=rfctrained.predict(valid_df_scaled)
     predicted_gpc=gpctrained.predict(valid_df_scaled)
@@ -47,3 +47,10 @@ def classifier(train_df_scaled, train_df_cancer, valid_df_cancer, valid_df_scale
     print('knn f1 -',f1_knn)
     print('rfc f1 -',f1_rfc)
     print('gpc f1 -',f1_gpc)
+
+    cohen_kappa_knn = cohen_kappa_score(valid_df_cancer['Cancer'], predicted_knn)
+    cohen_kappa_rfc= cohen_kappa_score(valid_df_cancer['Cancer'], predicted_rfc)
+    cohen_kappa_gpc= cohen_kappa_score(valid_df_cancer['Cancer'], predicted_gpc)
+    print('knn cohen kappa -', cohen_kappa_knn)
+    print('rfc cohen kappa -', cohen_kappa_rfc)
+    print('gpc cohen kappa -', cohen_kappa_gpc)
