@@ -74,6 +74,8 @@ for _ in range(10):
     if rfc_recalls:
         if recall_score(valid_df_cancer['Cancer'],predicted_rfc) > max(rfc_recalls):
             best_model=rfctrained
+    else:
+        best_model=rfctrained
 
     rfc_accuracies.append(accuracy_score(valid_df_cancer['Cancer'],predicted_rfc))
     rfc_recalls.append(recall_score(valid_df_cancer['Cancer'],predicted_rfc))
