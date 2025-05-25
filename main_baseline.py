@@ -73,9 +73,9 @@ for train_idx, test_idx in sss.split(x, y):
 
 ## Normalize the test features
 #Separate cancer values
-columns = test_df.columns
 test_df_cancer=test_df.copy()
 test_df=test_df.drop(columns='Cancer')
+columns = test_df.columns
 #Scaler get
 scaler = preprocessing.StandardScaler().fit(test_df)
 #Scaler apply
@@ -86,6 +86,7 @@ test_df_scaled=pd.DataFrame(test_scaled,columns=columns,dtype=np.float64)
 rfc_accuracies=[]
 rfc_recalls=[]
 rfc_f1=[]
+best_model=None
 
 ## Cross validation FIXME: Save best model and use it for testing instead of latest
 for _ in range(10):
@@ -119,91 +120,55 @@ for _ in range(10):
 
     knntrained,rfctrained,gpctrained=classifier(train_df_scaled, train_df_cancer)
     predicted_rfc=rfctrained.predict(valid_df_scaled)
+
+    if rfc_recalls:
+        if recall_score(valid_df_cancer['Cancer'],predicted_rfc) > max(rfc_recalls):
+            best_model=rfctrained
+
     rfc_accuracies.append(accuracy_score(valid_df_cancer['Cancer'],predicted_rfc))
-    rfc_recalls.append(recall_score(valid_df_cancer['Cancer']),predicted_rfc)
+    rfc_recalls.append(recall_score(valid_df_cancer['Cancer'],predicted_rfc))
     rfc_f1.append(f1_score(valid_df_cancer['Cancer']),predicted_rfc)
 
 print(f'Average of RFC accuracies over 10 runs: {np.mean(rfc_accuracies)}')
 print(f'Average of RFC recalls over 10 runs: {np.mean(rfc_recalls)}')
 print(f'Average of RFC F1 scores over 10 runs: {np.mean(rfc_f1)}')
-
-
-## Different ways of evaluating the models
-# predicted_knn=knntrained.predict(valid_df_scaled)
-# predicted_rfc=rfctrained.predict(valid_df_scaled)
-# predicted_gpc=gpctrained.predict(valid_df_scaled)
-# acc_knn = accuracy_score(valid_df_cancer['Cancer'], predicted_knn)
-# acc_rfc = accuracy_score(valid_df_cancer['Cancer'], predicted_rfc)
-# acc_gpc = accuracy_score(valid_df_cancer['Cancer'], predicted_gpc)
-# print('knn -',acc_knn)
-# print('rfc -',acc_rfc)
-# print('gpc -',acc_gpc)
-
-# recall_knn = recall_score(valid_df_cancer['Cancer'],predicted_knn)
-# recall_rfc = recall_score(valid_df_cancer['Cancer'],predicted_rfc)
-# recall_gpc = recall_score(valid_df_cancer['Cancer'],predicted_gpc)
-# print('knn recall -',recall_knn)
-# print('rfc recall -',recall_rfc)
-# print('gpc recall -',recall_gpc)
-
-# roc_knn=roc_auc_score(valid_df_cancer['Cancer'],predicted_knn)
-# roc_rfc=roc_auc_score(valid_df_cancer['Cancer'],predicted_rfc)
-# roc_gpc=roc_auc_score(valid_df_cancer['Cancer'],predicted_gpc)
-# print('knn roc -',roc_knn)
-# print('rfc roc -',roc_rfc)
-# print('gpc roc -',roc_gpc)
-
-# f1_knn=f1_score(valid_df_cancer['Cancer'],predicted_knn)
-# f1_rfc=f1_score(valid_df_cancer['Cancer'],predicted_rfc)
-# f1_gpc=f1_score(valid_df_cancer['Cancer'],predicted_gpc)
-# print('knn f1 -',f1_knn)
-# print('rfc f1 -',f1_rfc)
-# print('gpc f1 -',f1_gpc)
-
-# cohen_kappa_knn = cohen_kappa_score(valid_df_cancer['Cancer'], predicted_knn)
-# cohen_kappa_rfc= cohen_kappa_score(valid_df_cancer['Cancer'], predicted_rfc)
-# cohen_kappa_gpc= cohen_kappa_score(valid_df_cancer['Cancer'], predicted_gpc)
-# print('knn cohen kappa -', cohen_kappa_knn)
-# print('rfc cohen kappa -', cohen_kappa_rfc)
-# print('gpc cohen kappa -', cohen_kappa_gpc)
-
-print()
+print('Test part')
 ## Testing
-predicted_knn_test=knntrained.predict(test_df_scaled)
-predicted_rfc_test=rfctrained.predict(test_df_scaled)
-predicted_gpc_test=gpctrained.predict(test_df_scaled)
+#predicted_knn_test=knntrained.predict(test_df_scaled)
+predicted_rfc_test=best_model.predict(test_df_scaled)
+#predicted_gpc_test=gpctrained.predict(test_df_scaled)
 
-acc_knn = accuracy_score(test_df_cancer['Cancer'], predicted_knn_test)
+#acc_knn = accuracy_score(test_df_cancer['Cancer'], predicted_knn_test)
 acc_rfc = accuracy_score(test_df_cancer['Cancer'], predicted_rfc_test)
-acc_gpc = accuracy_score(test_df_cancer['Cancer'], predicted_gpc_test)
-print('knn -',acc_knn)
+#acc_gpc = accuracy_score(test_df_cancer['Cancer'], predicted_gpc_test)
+#print('knn -',acc_knn)
 print('rfc -',acc_rfc)
-print('gpc -',acc_gpc)
+#print('gpc -',acc_gpc)
 
-recall_knn = recall_score(test_df_cancer['Cancer'],predicted_knn_test)
+#recall_knn = recall_score(test_df_cancer['Cancer'],predicted_knn_test)
 recall_rfc = recall_score(test_df_cancer['Cancer'],predicted_rfc_test)
-recall_gpc = recall_score(test_df_cancer['Cancer'],predicted_gpc_test)
-print('knn recall -',recall_knn)
+#recall_gpc = recall_score(test_df_cancer['Cancer'],predicted_gpc_test)
+#print('knn recall -',recall_knn)
 print('rfc recall -',recall_rfc)
-print('gpc recall -',recall_gpc)
+#print('gpc recall -',recall_gpc)
 
-roc_knn=roc_auc_score(test_df_cancer['Cancer'],predicted_knn_test)
+#roc_knn=roc_auc_score(test_df_cancer['Cancer'],predicted_knn_test)
 roc_rfc=roc_auc_score(test_df_cancer['Cancer'],predicted_rfc_test)
-roc_gpc=roc_auc_score(test_df_cancer['Cancer'],predicted_gpc_test)
-print('knn roc -',roc_knn)
+#roc_gpc=roc_auc_score(test_df_cancer['Cancer'],predicted_gpc_test)
+#print('knn roc -',roc_knn)
 print('rfc roc -',roc_rfc)
-print('gpc roc -',roc_gpc)
+#print('gpc roc -',roc_gpc)
 
-f1_knn=f1_score(test_df_cancer['Cancer'],predicted_knn_test)
+#f1_knn=f1_score(test_df_cancer['Cancer'],predicted_knn_test)
 f1_rfc=f1_score(test_df_cancer['Cancer'],predicted_rfc_test)
-f1_gpc=f1_score(test_df_cancer['Cancer'],predicted_gpc_test)
-print('knn f1 -',f1_knn)
+#f1_gpc=f1_score(test_df_cancer['Cancer'],predicted_gpc_test)
+#print('knn f1 -',f1_knn)
 print('rfc f1 -',f1_rfc)
-print('gpc f1 -',f1_gpc)
+#print('gpc f1 -',f1_gpc)
 
-cohen_kappa_knn = cohen_kappa_score(test_df_cancer['Cancer'], predicted_knn_test)
+#cohen_kappa_knn = cohen_kappa_score(test_df_cancer['Cancer'], predicted_knn_test)
 cohen_kappa_rfc= cohen_kappa_score(test_df_cancer['Cancer'], predicted_rfc_test)
-cohen_kappa_gpc= cohen_kappa_score(test_df_cancer['Cancer'], predicted_gpc_test)
-print('knn cohen kappa -', cohen_kappa_knn)
+#cohen_kappa_gpc= cohen_kappa_score(test_df_cancer['Cancer'], predicted_gpc_test)
+#print('knn cohen kappa -', cohen_kappa_knn)
 print('rfc cohen kappa -', cohen_kappa_rfc)
-print('gpc cohen kappa -', cohen_kappa_gpc)
+#print('gpc cohen kappa -', cohen_kappa_gpc)
