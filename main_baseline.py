@@ -89,7 +89,7 @@ rfc_recalls=[]
 rfc_f1=[]
 best_model=None
 
-## Cross validation FIXME: Save best model and use it for testing instead of latest
+## Cross validation
 for _ in range(10):
     ## Training and validation
     sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2)
@@ -98,7 +98,7 @@ for _ in range(10):
     x = train_df2.drop(columns='Cancer')
     y = train_df2['Cancer']
 
-    ## Split based on cancer values FIXME: Look into whether train_df2 should be used instead of train_df - they should have the same result anyways
+    ## Split based on cancer values
     for train_idx, test_idx in sss.split(x, y):
         final_train_df = train_df.iloc[train_idx]  # 80%
         valid_df = train_df.iloc[test_idx]    # 20%
@@ -112,7 +112,7 @@ for _ in range(10):
     valid_df_cancer=valid_df.copy()
     valid_df=valid_df.drop(columns='Cancer')
     
-    ## Scaling
+    ## Scaling the training and validation data
     scaler = preprocessing.StandardScaler().fit(train_df2)
     train_scaled = scaler.transform(train_df2)
     valid_scaled = scaler.transform(valid_df)
