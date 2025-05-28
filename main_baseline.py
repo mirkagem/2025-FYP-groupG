@@ -99,13 +99,13 @@ for _ in range(10):
     y = train_df2['Cancer']
 
     ## Split based on cancer values
-    for train_idx, test_idx in sss.split(x, y):
+    for train_idx, test_idx in sss.split(x, y):                                         #we are using the same variables as above (x,y)
         final_train_df = train_df.iloc[train_idx]  # 80%
         valid_df = train_df.iloc[test_idx]    # 20%
     ## Takes previous training data
     ## Gives training data (80%) and validation data (20%)
 
-    ## Remove 'Cancer' for normalizing features
+    ## Remove 'Cancer' for normalizing features                                         # testing or normalizing? I would guess it is for testing
     train_df_cancer=final_train_df.copy()
     train_df2=final_train_df.drop(columns='Cancer')
 
