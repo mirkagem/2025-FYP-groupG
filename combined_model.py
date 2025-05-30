@@ -12,7 +12,7 @@ df_images = pd.read_csv(os.path.dirname(os.path.abspath(__file__))+"/util/model_
 df_images2 = pd.read_csv(os.path.dirname(os.path.abspath(__file__))+"/util/img_id.csv")
 df_metadata = pd.read_csv(os.path.dirname(os.path.abspath(__file__))+"/dataset.csv")
 
-print(df_metadata.shape) #ImageID of removed image: PAT_987_1859_859
+print(df_metadata.shape)
 print(df_images.shape)
 df_images['img_id'] = df_images2['ID']
 combined_df = pd.merge(df_images, df_metadata, on='img_id', how='inner')
