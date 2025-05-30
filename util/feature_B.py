@@ -34,13 +34,13 @@ def measure_streaks(image):
 
 def get_compactness(mask):
     # mask = color.rgb2gray(mask)
-    area = np.sum(mask)
+    area = np.sum(mask) # Calculate the area of the mask.
 
-    struct_el = morphology.disk(3)
-    mask_eroded = morphology.binary_erosion(mask, struct_el)
-    perimeter = np.sum(mask - mask_eroded)
+    struct_el = morphology.disk(3) # Create a structuring element for erosion.
+    mask_eroded = morphology.binary_erosion(mask, struct_el) # Erode the mask using the structuring element.
+    perimeter = np.sum(mask - mask_eroded) # Calculate the perimeter of the mask using the difference between the original and eroded mask.
 
-    return perimeter**2 / (4 * np.pi * area)
+    return perimeter**2 / (4 * np.pi * area) # Calculate the compactness score.
 
 def feature_B(image,mask,im_id,df:pd.DataFrame):
     '''Takes mask of image, image and dataframe to write results in\\

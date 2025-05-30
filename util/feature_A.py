@@ -14,63 +14,63 @@ def find_midpoint_v1(image):
 def asymmetry(mask):
     
 
-    row_mid, col_mid = find_midpoint_v1(mask)
+    row_mid, col_mid = find_midpoint_v1(mask) # Get the midpoints of the mask along the y-axis and x-axis.
 
-    upper_half = mask[:ceil(row_mid), :]
-    lower_half = mask[floor(row_mid):, :]
-    left_half = mask[:, :ceil(col_mid)]
-    right_half = mask[:, floor(col_mid):]
+    upper_half = mask[:ceil(row_mid), :] # Get the upper half of the mask.
+    lower_half = mask[floor(row_mid):, :] # Get the lower half of the mask.
+    left_half = mask[:, :ceil(col_mid)] # Get the left half of the mask.
+    right_half = mask[:, floor(col_mid):] # Get the right half of the mask.
 
-    flipped_lower = np.flip(lower_half, axis=0)
-    flipped_right = np.flip(right_half, axis=1)
+    flipped_lower = np.flip(lower_half, axis=0) # Flip the lower half of the mask along the y-axis.
+    flipped_right = np.flip(right_half, axis=1) # Flip the right half of the mask along the x-axis.
 
-    hori_xor_area = np.logical_xor(upper_half, flipped_lower)
-    vert_xor_area = np.logical_xor(left_half, flipped_right)
+    hori_xor_area = np.logical_xor(upper_half, flipped_lower) # Calculate the horizontal asymmetry area.
+    vert_xor_area = np.logical_xor(left_half, flipped_right) # Calculate the vertical asymmetry area.
 
-    total_pxls = np.sum(mask)
-    hori_asymmetry_pxls = np.sum(hori_xor_area)
-    vert_asymmetry_pxls = np.sum(vert_xor_area)
+    total_pxls = np.sum(mask) # Calculate the total number of pixels in the mask.
+    hori_asymmetry_pxls = np.sum(hori_xor_area) # Calculate the number of pixels in the horizontal asymmetry area.
+    vert_asymmetry_pxls = np.sum(vert_xor_area) # Calculate the number of pixels in the vertical asymmetry area.
 
-    asymmetry_score = (hori_asymmetry_pxls + vert_asymmetry_pxls) / (total_pxls * 2)
+    asymmetry_score = (hori_asymmetry_pxls + vert_asymmetry_pxls) / (total_pxls * 2) # Calculate the asymmetry score.
 
-    return round(asymmetry_score, 4)
+    return round(asymmetry_score, 4) # Return the asymmetry score rounded to 4 decimal places.
 
 def cut_mask(mask):
-    col_sums = np.sum(mask, axis=0)
-    row_sums = np.sum(mask, axis=1)
-    active_cols = []
-    for index, col_sum in enumerate(col_sums):
-        if col_sum != 0:
-            active_cols.append(index)
+    col_sums = np.sum(mask, axis=0) # Sum the mask along the y-axis.
+    row_sums = np.sum(mask, axis=1) # Sum the mask along the x-axis.
+    active_cols = [] # Initialize an empty list to store the active columns.
+    for index, col_sum in enumerate(col_sums): # Iterate through the summed mask.
+        if col_sum != 0: # If the column sum is not 0, append the index to the list.
+            active_cols.append(index) # Append the index to the list.
 
-    active_rows = []
-    for index, row_sum in enumerate(row_sums):
-        if row_sum != 0:
-            active_rows.append(index)
+    active_rows = [] # Initialize an empty list to store the active rows.
+    for index, row_sum in enumerate(row_sums): # Iterate through the summed mask.
+        if row_sum != 0: # If the row sum is not 0, append the index to the list.
+            active_rows.append(index) # Append the index to the list.
 
-    col_min = active_cols[0]
-    col_max = active_cols[-1]
-    row_min = active_rows[0]
-    row_max = active_rows[-1]
+    col_min = active_cols[0] # Get the minimum index of the active columns.
+    col_max = active_cols[-1] # Get the maximum index of the active columns.
+    row_min = active_rows[0] # Get the minimum index of the active rows.
+    row_max = active_rows[-1] # Get the maximum index of the active rows.
 
-    cut_mask_ = mask[row_min:row_max+1, col_min:col_max+1]
+    cut_mask_ = mask[row_min:row_max+1, col_min:col_max+1] # Crop the mask to the limits of the active rows and columns.
 
-    return cut_mask_
+    return cut_mask_ # Return the cropped mask.
 
 def rotation_asymmetry(mask, n: int):
 
-    asymmetry_scores = {}
+    asymmetry_scores = {} # Initialize an empty dictionary to store the asymmetry scores.
 
-    for i in range(n):
+    for i in range(n): # Iterate through the number of rotations.
 
-        degrees = 90 * i / n
+        degrees = 90 * i / n # Calculate the degrees of rotation.
 
-        rotated_mask = rotate(mask, degrees)
-        cutted_mask = cut_mask(rotated_mask)
+        rotated_mask = rotate(mask, degrees) # Rotate the mask by the calculated degrees.
+        cutted_mask = cut_mask(rotated_mask) # Crop the rotated mask to the limits of the active rows and columns.
 
-        asymmetry_scores[degrees] = asymmetry(cutted_mask)
+        asymmetry_scores[degrees] = asymmetry(cutted_mask) # Calculate the asymmetry score of the cropped rotated mask.
 
-    return asymmetry_scores
+    return asymmetry_scores # Return the dictionary of asymmetry scores.
 
 def mean_asymmetry(mask, rotations = 30):
     
@@ -81,10 +81,10 @@ def mean_asymmetry(mask, rotations = 30):
 
 def worst_asymmetry(mask, rotations = 30):
     
-    asymmetry_scores = rotation_asymmetry(mask, rotations)
-    worst_score = max(asymmetry_scores.values())
+    asymmetry_scores = rotation_asymmetry(mask, rotations) # Calculate the asymmetry scores of the rotated masks.
+    worst_score = max(asymmetry_scores.values()) # Calculate the maximum of the asymmetry scores.
 
-    return worst_score  
+    return worst_score # Return the worst asymmetry score. 
 ## ----------------------------------------------------
 
 ## All used for get_asymmetry V

@@ -96,7 +96,7 @@ class ImageDataLoader:
             else:
                 mask=cv2.imread(f'{self.mask_path}/{mask_name}', cv2.IMREAD_GRAYSCALE)
                 #Checks to makes sure that the mask its not a black image, if it is then it will create a new mask
-                if np.sum(np.nonzero(mask))==0: ## If mask black image
+                if np.sum(np.nonzero(mask)) < 10 or (img_rgb.shape[0:2] != mask.shape): ## If mask black image
                     mask=get_mask(img_rgb) ## Make own mask
             #Here it applies the mask to the image
             mask = mask.astype(int)
@@ -108,7 +108,7 @@ class ImageDataLoader:
             masked_images.append(masked_image)
 
             #Here it saves the masked images as JPEGs
-            dir_path = self.directory + r'\New'
+            dir_path = self.directory + r'\Masked_Images'
             os.makedirs(dir_path, exist_ok=True)
             saveImageFile(image_masked, os.path.join(dir_path, os.path.basename(file_path)))
         

@@ -10,7 +10,7 @@ def removeHair(img_org, img_gray, kernel_size=25, threshold=0.1, radius=3.0):
 
     # intensify the hair countours in preparation for the inpainting algorithm
     _, thresh = cv2.threshold(blackhat, threshold, 255, cv2.THRESH_BINARY)
-    thresh = thresh.astype(np.uint8) #chatgpt fix, otherwise it wouldn't work
+    thresh = thresh.astype(np.uint8)
 
     # inpaint the original image depending on the mask
     img_out = cv2.inpaint(img_org, thresh, radius, cv2.INPAINT_TELEA)

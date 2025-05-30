@@ -1,12 +1,14 @@
 from sklearn.metrics import cohen_kappa_score
 import pandas as pd
 import numpy as np
+import os
 
-df_manual=pd.read_csv('Manual Annotations - Sheet1.csv')        # read CSV with manual annotation
-df_model=pd.read_csv('model_features.csv')                      # read CSV with model's annotations
-df_img_id=pd.read_csv('features2.csv')                          # read image IDs 
 
-df_model.insert(0, 'id', df_img_id['ID'].values)                # merge image IDs onto the model's results (they are in the same order)
+df_manual=pd.read_csv(os.path.dirname(os.path.abspath(__file__)) + '/Manual Annotations - Sheet1.csv')        # read CSV with manual annotation
+df_model=pd.read_csv(os.path.dirname(os.path.abspath(__file__)) +'/model_features.csv')                      # read CSV with model's annotations
+df_img = pd.read_csv(os.path.dirname(os.path.abspath(__file__)) +'/img_id.csv')                             # read image IDs
+
+df_model.insert(0,'id',df_img["ID"].values) #merge image IDs onto the model's results (they are in the same order)
 
 df_model_hair = df_model.drop(columns=['A - worst asymmetry', 'B - compactness', 'C - red variance', 'C - green variance', 'C - blue variance', 'Cancer'])  #drop columns we are not interested in
 
@@ -32,4 +34,4 @@ merged = merged.rename(columns={
     'Average': 'Manual Score'
 })
 
-cohen_kappa_score(merged['Manual Score'], merged['Model Score'])        #calculate Cohen's Kappa score to see how much our manual annotations agree with the model's annotations
+print(cohen_kappa_score(merged['Manual Score'], merged['Model Score']))        #calculate Cohen's Kappa score to see how much our manual annotations agree with the model's annotations

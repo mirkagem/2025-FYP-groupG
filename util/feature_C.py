@@ -44,25 +44,25 @@ def feature_C(image,mask,im_id,df:pd.DataFrame):
     
     def rgb_var(image, slic_segments):
     
-        if len(np.unique(slic_segments)) == 2: 
-            return 0, 0, 0
+        if len(np.unique(slic_segments)) == 2:  # If there are only two segments, return 0 for all color variances.
+            return 0, 0, 0 # Return 0 for all color variances.
 
-        rgb_means = get_rgb_means(image, slic_segments)
-        n = len(rgb_means) 
+        rgb_means = get_rgb_means(image, slic_segments) # Get the RGB means of the image.
+        n = len(rgb_means)  # Get the number of RGB means.
 
-        red = []
-        green = []
-        blue = []
-        for rgb_mean in rgb_means:
-            red.append(rgb_mean[0])
-            green.append(rgb_mean[1])
-            blue.append(rgb_mean[2])
+        red = [] # Initialize an empty list to store the red values.
+        green = [] # Initialize an empty list to store the green values.
+        blue = [] # Initialize an empty list to store the blue values.
+        for rgb_mean in rgb_means: # Iterate through the RGB means.
+            red.append(rgb_mean[0]) # Append the red value to the list.
+            green.append(rgb_mean[1]) # Append the green value to the list.
+            blue.append(rgb_mean[2]) # Append the blue value to the list.
 
-        red_var = variance(red, sum(red)/n)
-        green_var = variance(green, sum(green)/n)
-        blue_var = variance(blue, sum(blue)/n)
+        red_var = variance(red, sum(red)/n) # Calculate the variance of the red values.
+        green_var = variance(green, sum(green)/n) # Calculate the variance of the green values.
+        blue_var = variance(blue, sum(blue)/n) # Calculate the variance of the blue values.
 
-        return red_var, green_var, blue_var
+        return red_var, green_var, blue_var # Return the variances of the red, green, and blue values.
     
     red,green,blue=rgb_var(image,slic_segmentation(image, mask, n_segments = 50, compactness = 0.1))
     #df.loc[im_id,'C - blueveil']=blue_veil(image)
